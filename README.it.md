@@ -6,6 +6,12 @@ Un'app [DeskThing](https://deskthing.app) per lo Spotify **Car Thing** che mostr
 facendo le istanze del [coding agent Pi](https://pi.dev), con una piccola mascotte in pixel art
 ("Robottina") che corre mentre Pi lavora.
 
+| Al lavoro | Pi ti chiede qualcosa | Lavoro finito |
+|---|---|---|
+| ![Pi al lavoro, la Robottina corre](docs/busy.jpg) | ![Glitch mentre Pi aspetta una risposta](docs/asking.jpg) | ![Avviso DONE](docs/done.jpg) |
+
+*Screenshot alla risoluzione del Car Thing (800×480), con dati di esempio.*
+
 - **Stato in tempo reale di ogni istanza di Pi**: al lavoro, libera, finita da N minuti.
 - **"Pi ti sta chiedendo qualcosa"**: quando Pi si ferma per farti una domanda (lo strumento
   `ask_user` di [pi-ask](https://www.npmjs.com/package/@eko24ive/pi-ask), la skill *grilling*, o una

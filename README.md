@@ -6,6 +6,12 @@ A [DeskThing](https://deskthing.app) app for the Spotify **Car Thing** that show
 [Pi coding agent](https://pi.dev) instances are doing, with a little pixel-art mascot
 ("Robottina") that runs while Pi works.
 
+| Working | Pi asks you something | Job done |
+|---|---|---|
+| ![Pi working, Robottina running](docs/busy.jpg) | ![Glitch while Pi waits for an answer](docs/asking.jpg) | ![DONE banner](docs/done.jpg) |
+
+*Screenshots at the Car Thing resolution (800×480), with sample data.*
+
 - **Live status of every Pi instance**: busy, idle, finished N minutes ago.
 - **"Pi is asking you something"**: when Pi stops to ask a question (the `ask_user` tool of
   [pi-ask](https://www.npmjs.com/package/@eko24ive/pi-ask), the *grilling* skill, or a reply that
