@@ -1,0 +1,37 @@
+{
+    "id": "pistatus",
+    "isWebApp": true,
+    "requires": [],
+    "label": "Pi Status",
+    "version": "0.1.0",
+    "version_code": "0.1",
+    "compatible_server": [
+        "11"
+    ],
+    "compatible_client": [
+        "11"
+    ],
+    "description": "Mostra quando le istanze di Pi sulla VM sono al lavoro e avvisa quando finiscono",
+    "author": "franzo-ux",
+    "platforms": [
+        "windows",
+        "macos",
+        "linux"
+    ],
+    "homepage": "",
+    "repository": "",
+    "tags": [
+        "webappOnly"
+    ],
+    "requiredVersions": {
+        "server": ">=0.11.0",
+        "client": ">=0.11.0"
+    },
+    "postinstall": false,
+    "postinstall_message": "",
+    "postinstall_script": "postinstall.js",
+    "template": "default",
+    "isAudioSource": false,
+    "isScreenSaver": false,
+    "isLocalApp": false
+}

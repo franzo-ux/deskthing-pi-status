@@ -1,0 +1,17 @@
+{
+  "name": "deskthing-pi-status",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Pi Status - a DeskThing app for the Spotify Car Thing",
+  "scripts": {
+    "build": "node tools/build.mjs",
+    "deploy": "node tools/install.mjs"
+  },
+  "devDependencies": {
+    "@deskthing/client": "0.11.2",
+    "@deskthing/server": "0.11.6",
+    "@deskthing/types": "0.11.18",
+    "esbuild": "^0.28.2"
+  }
+}
