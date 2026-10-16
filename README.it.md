@@ -100,3 +100,7 @@ Per aggiornare un'app già installata: `npm run build`, poi `npm run deploy -- -
 - DeskThing 0.11 consegna i messaggi `sendToApp` al mittente invece che al destinatario, quindi
   Stack Status passa gli allarmi tramite un file (`apps/homelab/alert.json`) che Pi Status controlla.
 - La mascotte di questo repository (Robottina) è pixel art originale.
+
+## Licenza
+
+[MIT](LICENSE): puoi usarlo, modificarlo e condividerlo liberamente.

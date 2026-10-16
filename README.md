@@ -100,3 +100,7 @@ To update an already installed app: `npm run build` then `npm run deploy -- --fi
 - DeskThing 0.11 delivers `sendToApp` messages back to the sender, so Stack Status passes alerts
   through a file (`apps/homelab/alert.json`) that Pi Status watches.
 - The mascot artwork in this repository (Robottina) is original pixel art.
+
+## License
+
+[MIT](LICENSE): you are free to use, modify and share it.

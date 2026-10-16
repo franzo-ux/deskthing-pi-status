@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "description": "Pi Status - a DeskThing app for the Spotify Car Thing",
+  "license": "MIT",
   "scripts": {
     "build": "node tools/build.mjs",
     "deploy": "node tools/install.mjs"
