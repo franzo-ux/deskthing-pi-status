@@ -140,8 +140,8 @@ DeskThing.on(DESKTHING_EVENTS.START, async () => {
   // options so new mascots show up for existing installs.
   await DeskThing.setSettingOptions("mascot", MASCOT_OPTIONS);
   if (typeof saved?.homelab_switch?.value === "boolean") switchOnAlert = saved.homelab_switch.value;
-  const t = Number(saved?.screen_timeout?.value);
-  setScreenTimeout(Number.isFinite(t) ? t : 25);
+  const minutes = Number(saved?.screen_timeout?.value);
+  setScreenTimeout(Number.isFinite(minutes) ? minutes : 25);
   ensureScreenIdle();
   // re-check every minute: the Car Thing may have rebooted or reconnected
   if (screenTimer) clearInterval(screenTimer);
