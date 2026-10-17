@@ -1,5 +1,6 @@
 import { createDeskThing } from "@deskthing/server";
 import { DESKTHING_EVENTS, SETTING_TYPES } from "@deskthing/types";
+import { isLang, LANGUAGE_OPTIONS, t, type Lang } from "../i18n";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { checkMusic, ensureScreenIdle, setScreenTimeout, wakeScreen } from "./screen";
@@ -27,6 +28,7 @@ const POLL_MS = 2000;
 
 let statusUrl = DEFAULT_URL;
 let switchOnAlert = true;
+let lang: Lang = "en";
 let mascot = "robottina";
 let timer: ReturnType<typeof setInterval> | null = null;
 let screenTimer: ReturnType<typeof setInterval> | null = null;
@@ -40,7 +42,7 @@ const sendMascot = () => DeskThing.send({ type: "mascot", payload: mascot });
 // if the client asks before its connection is ready.
 const send = () => {
   // "now": the Car Thing clock is not synced, the display uses ours
-  DeskThing.send({ type: "pi_status", payload: { ...last, now: Date.now() } });
+  DeskThing.send({ type: "pi_status", payload: { ...last, now: Date.now(), lang } });
   sendMascot();
 };
 
@@ -92,18 +94,27 @@ const MASCOT_OPTIONS = [{ label: "Robottina", value: "robottina" }];
 DeskThing.on(DESKTHING_EVENTS.START, async () => {
   const saved = (await DeskThing.getSettings()) as any;
   if (typeof saved?.mascot?.value === "string") mascot = saved.mascot.value;
+  if (isLang(saved?.language?.value)) lang = saved.language.value;
   await DeskThing.initSettings({
+    language: {
+      id: "language",
+      label: t(lang, "setLanguage"),
+      description: t(lang, "setLanguageDesc"),
+      type: SETTING_TYPES.SELECT,
+      value: lang,
+      options: LANGUAGE_OPTIONS,
+    },
     status_url: {
       id: "status_url",
-      label: "Indirizzo stato Pi",
-      description: "URL del servizio pi-status sulla VM",
+      label: t(lang, "setUrl"),
+      description: t(lang, "setUrlDesc"),
       type: SETTING_TYPES.STRING,
       value: DEFAULT_URL,
     },
     screen_timeout: {
       id: "screen_timeout",
-      label: "Spegni schermo dopo (minuti)",
-      description: "Minuti senza attività prima di spegnere lo schermo del Car Thing (0 = mai)",
+      label: t(lang, "setSleep"),
+      description: t(lang, "setSleepDesc"),
       type: SETTING_TYPES.NUMBER,
       value: 25,
       min: 0,
@@ -111,15 +122,15 @@ DeskThing.on(DESKTHING_EVENTS.START, async () => {
     },
     homelab_switch: {
       id: "homelab_switch",
-      label: "Passa a Homelab sugli allarmi",
-      description: "Quando Homelab segnala un servizio giù, il Car Thing passa all'app Homelab",
+      label: t(lang, "setSwitch"),
+      description: t(lang, "setSwitchDesc"),
       type: SETTING_TYPES.BOOLEAN,
       value: true,
     },
     mascot: {
       id: "mascot",
-      label: "Mascotte",
-      description: "Chi corre sullo schermo quando Pi lavora",
+      label: t(lang, "setMascot"),
+      description: t(lang, "setMascotDesc"),
       type: SETTING_TYPES.SELECT,
       value: mascot,
       options: MASCOT_OPTIONS,
@@ -138,8 +149,8 @@ DeskThing.on(DESKTHING_EVENTS.START, async () => {
   if (musicTimer) clearInterval(musicTimer);
   musicTimer = setInterval(checkMusic, 5000);
   if (alertTimer) clearInterval(alertTimer);
-  checkHomelabAlert();
-  alertTimer = setInterval(checkHomelabAlert, 2000);
+  checkStackAlert();
+  alertTimer = setInterval(checkStackAlert, 2000);
   startPolling();
 });
 
@@ -148,6 +159,11 @@ DeskThing.on(DESKTHING_EVENTS.SETTINGS, (data) => {
   if (typeof m === "string" && m !== mascot) {
     mascot = m;
     sendMascot();
+  }
+  const l = (data.payload as any)?.language?.value;
+  if (isLang(l) && l !== lang) {
+    lang = l;
+    send(); // the display follows at once; setting labels at next start
   }
   const sw = (data.payload as any)?.homelab_switch?.value;
   if (typeof sw === "boolean") switchOnAlert = sw;
@@ -165,21 +181,21 @@ DeskThing.on(DESKTHING_EVENTS.GET, (data) => {
   if (data.request === "mascot") sendMascot();
 });
 
-// Alerts from the Homelab app (deskThing.sendToApp): show them on the display
-// and, if enabled, switch the Car Thing over to Homelab.
-function onHomelabAlert(payload: any) {
-  const text = String(payload?.text || "allarme Homelab");
-  console.log("Homelab alert received: " + text);
-  wakeScreen("Homelab alert");
+// Alerts from the Stack Status app (deskThing.sendToApp): show them on the display
+// and, if enabled, switch the Car Thing over to Stack Status.
+function onStackAlert(payload: any) {
+  const text = String(payload?.text || t(lang, "stackAlert"));
+  console.log("Stack Status alert received: " + text);
+  wakeScreen("Stack Status alert");
   DeskThing.send({ type: "homelab_alert", payload: { text, switch: switchOnAlert } });
 }
-// DeskThing 0.11 delivers sendToApp messages back to the sender, so Homelab
+// DeskThing 0.11 delivers sendToApp messages back to the sender, so Stack Status (app id "homelab")
 // writes its alerts to apps/homelab/alert.json and we poll that file.
 declare const __dirname: string;
 const HOMELAB_ALERT = join(__dirname, "..", "..", "homelab", "alert.json");
 let lastAlertAt: number | null = null;
 
-function checkHomelabAlert() {
+function checkStackAlert() {
   let alert: { text?: string; at?: number } | null = null;
   try {
     alert = JSON.parse(readFileSync(HOMELAB_ALERT, "utf8"));
@@ -193,7 +209,7 @@ function checkHomelabAlert() {
   }
   if (at > lastAlertAt) {
     lastAlertAt = at;
-    onHomelabAlert(alert);
+    onStackAlert(alert);
   }
 }
 let alertTimer: ReturnType<typeof setInterval> | null = null;

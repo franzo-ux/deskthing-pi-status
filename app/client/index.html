@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="it">
+<html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -107,7 +107,7 @@
   .p-ask img { border-color: #F09082; animation: gjit .42s steps(1) infinite;
     filter: drop-shadow(4px 0 0 rgba(255,40,100,.8)) drop-shadow(-4px 0 0 rgba(0,230,255,.8)); }
 
-  /* ---------- Homelab alert banner (before switching app) ---------- */
+  /* ---------- Stack Status alert banner (before switching app) ---------- */
   .alert {
     position: fixed; left: 0; right: 0; top: 0; bottom: 0; display: none; z-index: 20;
     flex-direction: column; align-items: center; justify-content: center; padding-right: 70px;
@@ -127,18 +127,18 @@
   <div id="app" class="app wait">
     <div class="left">
       <svg class="logo" width="34" height="34" viewBox="165 165 470 470"><path fill="#F09082" d="M165.29 165.29H517.36V400H400V282.65H165.29Z"/><path fill="#4D9ABF" d="M165.29 282.65H282.65V400H400V517.36H282.65V634.72H165.29Z"/><path fill="#F1BE58" d="M517.36 400H634.72V634.72H517.36Z"/></svg>
-      <div class="count"><div id="big" class="big">…</div><div id="lbl" class="lbl">collegamento</div></div>
+      <div class="count"><div id="big" class="big">…</div><div id="lbl" class="lbl">connecting</div></div>
       <div id="track" class="track"><div id="robot" class="robot"></div></div>
     </div>
     <div class="right"><div id="list"></div></div>
   </div>
-  <div id="alert" class="alert"><div id="alert-text"></div><div class="alert-sub">Homelab</div></div>
+  <div id="alert" class="alert"><div id="alert-text"></div><div class="alert-sub">Stack Status</div></div>
   <div id="done" class="done">
     <div class="box">
       <div class="h"><b>✓ DONE:</b> <span id="done-label"></span></div>
       <div id="done-time"></div>
     </div>
-    <div class="hint">tocca per chiudere</div>
+    <div class="hint">tap to close</div>
   </div>
   <script src="./main.js"></script>
 </body>

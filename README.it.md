@@ -10,7 +10,7 @@ facendo le istanze del [coding agent Pi](https://pi.dev), con una piccola mascot
 |---|---|---|
 | ![Pi al lavoro, la Robottina corre](docs/busy.jpg) | ![Glitch mentre Pi aspetta una risposta](docs/asking.jpg) | ![Avviso DONE](docs/done.jpg) |
 
-*Screenshot alla risoluzione del Car Thing (800×480), con dati di esempio.*
+*Screenshot alla risoluzione del Car Thing (800×480), con dati di esempio, in inglese (lingua predefinita).*
 
 - **Stato in tempo reale di ogni istanza di Pi**: al lavoro, libera, finita da N minuti.
 - **"Pi ti sta chiedendo qualcosa"**: quando Pi si ferma per farti una domanda (lo strumento
@@ -19,8 +19,9 @@ facendo le istanze del [coding agent Pi](https://pi.dev), con una piccola mascot
 - **Avviso "✓ DONE"** quando un lavoro finisce.
 - **Spegnimento dello schermo** del Car Thing: si spegne dopo N minuti senza tocchi, rotella o tasti
   e si riaccende da solo quando Pi inizia/finisce/chiede, o quando parte la musica.
-- **Allarmi Homelab**: se l'app compagna [Stack Status](https://github.com/franzo-ux/deskthing-stack-status)
+- **Allarmi degli stack**: se l'app compagna [Stack Status](https://github.com/franzo-ux/deskthing-stack-status)
   segnala un servizio giù, Pi Status mostra l'avviso e passa il Car Thing a quell'app.
+- **Italiano o inglese**: la lingua si sceglie nelle impostazioni (predefinita: inglese).
 
 ```
  ┌────────── VM / server con Pi ──────────────┐        ┌──────── PC con DeskThing ───────────┐
@@ -78,9 +79,10 @@ Per aggiornare un'app già installata: `npm run build`, poi `npm run deploy -- -
 
 | Impostazione | Significato |
 |---|---|
+| Language / Lingua | **English** (predefinita) o **Italiano**: lo schermo cambia subito, le voci delle impostazioni dopo il riavvio di DeskThing |
 | Indirizzo stato Pi | URL del servizio di stato, es. `http://pi-host.local:8765/status` |
 | Spegni schermo dopo (minuti) | spegnimento dello schermo del Car Thing; `0` = mai |
-| Passa a Homelab sugli allarmi | passa a Stack Status quando segnala un servizio giù |
+| Passa a Stack Status sugli allarmi | passa a Stack Status quando segnala un servizio giù |
 | Mascotte | la mascotte sullo schermo |
 
 ## Come funziona
@@ -99,7 +101,7 @@ Per aggiornare un'app già installata: `npm run build`, poi `npm run deploy -- -
 - **Rotella e tasti smettono di funzionare**: un'app aveva preso il focus della tastiera. Queste app
   non lo prendono mai al tocco; se succede con altre app riavvia il client di DeskThing.
 - **Le icone non cambiano dopo un aggiornamento**: DeskThing fa tenere in memoria le icone per 24 ore.
-- **"VM non raggiungibile"**: controlla l'URL nelle impostazioni e che la porta 8765 sia raggiungibile.
+- **"host di Pi non raggiungibile"**: controlla l'URL nelle impostazioni e che la porta 8765 sia raggiungibile.
 
 ## Note
 

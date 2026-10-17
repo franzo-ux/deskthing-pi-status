@@ -1,4 +1,5 @@
 import { createDeskThing } from "@deskthing/client";
+import { isLang, t, type Key, type Lang } from "../i18n";
 import * as Robottina from "./robot";
 
 type Mascot = {
@@ -46,6 +47,8 @@ const now_ = () => Date.now() + skew;
 let firstStatus = true;
 let mascotName = "robottina";
 let doneUntil = 0;
+let lang: Lang = "en";
+const tr = (key: Key, vars?: Record<string, string | number>) => t(lang, key, vars);
 
 function esc(s: string) {
   return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c] as string);
@@ -75,7 +78,7 @@ function render() {
   if (!status) {
     app.className = "app wait";
     $("big").textContent = "…";
-    $("lbl").textContent = "collegamento";
+    $("lbl").textContent = tr("connecting");
     list.innerHTML = "";
     robot.setWalking(false);
     return;
@@ -87,30 +90,30 @@ function render() {
   if (!status.online) {
     app.className = "app offline";
     $("big").textContent = "!";
-    $("lbl").textContent = "VM non raggiungibile";
+    $("lbl").textContent = tr("unreachable");
   } else if (asking.length) {
     app.className = "app ask";
     $("big").textContent = "?";
-    $("lbl").textContent = asking.length === 1 ? "Pi ti chiede" : asking.length + " domande per te";
+    $("lbl").textContent = asking.length === 1 ? tr("asksOne") : tr("asksMany", { n: asking.length });
   } else if (busy.length) {
     app.className = "app busy";
     $("big").textContent = String(busy.length);
-    $("lbl").textContent = "al lavoro";
+    $("lbl").textContent = tr("working");
   } else {
     app.className = "app idle";
     $("big").textContent = String(status.sessions.length);
-    $("lbl").textContent = status.sessions.length === 1 ? "istanza libera" : "istanze libere";
+    $("lbl").textContent = status.sessions.length === 1 ? tr("idleOne") : tr("idleMany");
   }
   const isAsking = status.online && asking.length > 0;
   robot.setWalking(status.online && !isAsking && busy.length > 0);
   robot.setGlitch(isAsking);
 
   if (!status.online) {
-    list.innerHTML = '<div class="empty">' + esc(status.error || "nessuna risposta") + "</div>";
+    list.innerHTML = '<div class="empty">' + esc(status.error || tr("noAnswer")) + "</div>";
     return;
   }
   if (!status.sessions.length) {
-    list.innerHTML = '<div class="empty">Nessuna istanza di Pi aperta</div>';
+    list.innerHTML = '<div class="empty">' + tr("noInstances") + "</div>";
     return;
   }
   list.innerHTML = status.sessions
@@ -120,12 +123,12 @@ function render() {
       const recent = !isBusy && !isAsk && s.lastDone !== null && now - s.lastDone < 30 * 60 * 1000;
       const cls = isAsk ? "ask" : isBusy ? "busy" : recent ? "fin" : "wait";
       const right = isAsk
-        ? "ti chiede · " + duration(now - s.since, true)
+        ? tr("rowAsking", { d: duration(now - s.since, true) })
         : isBusy
         ? duration(now - s.since, true)
         : s.lastDone
-          ? "finito " + duration(now - s.lastDone, true) + " fa"
-          : "in attesa";
+          ? tr("rowDone", { d: duration(now - s.lastDone, true) })
+          : tr("rowWaiting");
       return (
         '<div class="row ' + cls + '"><span class="sq"></span>' +
         '<span class="label">' + esc(s.label) + "</span>" +
@@ -283,12 +286,24 @@ function showDone(label: string, ms: number) {
   doneTimer = setTimeout(() => ($("done").className = "done"), 15000);
 }
 
+// texts written in index.html
+function applyStaticTexts() {
+  document.documentElement.lang = lang;
+  ($("done").querySelector(".hint") as HTMLElement).textContent = tr("tapToClose");
+  ($("alert").querySelector(".alert-sub") as HTMLElement).textContent = tr("stackStatus");
+}
+applyStaticTexts();
+
 $("done").addEventListener("click", () => {
   $("done").className = "done";
 });
 
 DeskThing.on("pi_status", (data: any) => {
   status = data.payload as PiStatus;
+  if (isLang((data.payload as any).lang) && (data.payload as any).lang !== lang) {
+    lang = (data.payload as any).lang;
+    applyStaticTexts();
+  }
   if (typeof (data.payload as any).now === "number") skew = (data.payload as any).now - Date.now();
   // Arriving here right after a job finished (e.g. switched over from another
   // app): show the "done" banner we would otherwise have missed.
@@ -312,10 +327,10 @@ DeskThing.on("mascot", (data: any) => {
   render();
 });
 
-// Homelab alert: glitchy banner, then jump to the Homelab app.
+// Stack Status alert: glitchy banner, then jump to the Stack Status app.
 DeskThing.on("homelab_alert", (data: any) => {
   const p = data.payload || {};
-  $("alert-text").textContent = "⚠ " + (p.text || "allarme Homelab");
+  $("alert-text").textContent = "⚠ " + (p.text || tr("stackAlert"));
   $("alert").className = "alert show";
   setTimeout(() => ($("alert").className = "alert"), 6000);
   if (p.switch) {
@@ -323,7 +338,7 @@ DeskThing.on("homelab_alert", (data: any) => {
       try {
         (DeskThing as any).triggerAction({ id: "open", value: "homelab", source: "server" });
       } catch (e) {
-        console.warn("could not switch to Homelab", e);
+        console.warn("could not switch to Stack Status", e);
       }
     }, 1400);
   }

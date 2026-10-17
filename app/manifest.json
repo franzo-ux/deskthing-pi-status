@@ -11,7 +11,7 @@
     "compatible_client": [
         "11"
     ],
-    "description": "Mostra quando le istanze di Pi sulla VM sono al lavoro e avvisa quando finiscono",
+    "description": "Shows when your Pi coding agent instances are working, asking or done",
     "author": "franzo-ux",
     "platforms": [
         "windows",

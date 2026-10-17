@@ -19,9 +19,10 @@ A [DeskThing](https://deskthing.app) app for the Spotify **Car Thing** that show
 - **"✓ DONE" banner** when a job finishes.
 - **Screen sleep** for the Car Thing: the display turns off after N minutes without touches,
   knob or buttons, and wakes up on its own when Pi starts/finishes/asks, or when music starts.
-- **Homelab alerts**: if the companion app
+- **Stack alerts**: if the companion app
   [Stack Status](https://github.com/franzo-ux/deskthing-stack-status) reports a service down, Pi Status
   shows the alert and switches the Car Thing to it.
+- **English or Italian**: pick the language in the settings.
 
 ```
  ┌────────── VM / server running Pi ──────────┐        ┌──────── PC running DeskThing ───────┐
@@ -78,10 +79,11 @@ To update an already installed app: `npm run build` then `npm run deploy -- --fi
 
 | Setting | Meaning |
 |---|---|
-| Indirizzo stato Pi | URL of the status service, e.g. `http://pi-host.local:8765/status` |
-| Spegni schermo dopo (minuti) | Car Thing screen sleep; `0` = never |
-| Passa a Homelab sugli allarmi | switch to Stack Status when it reports a service down |
-| Mascotte | mascot running on screen |
+| Language | **English** (default) or **Italiano**: the screen switches at once, the setting labels after restarting DeskThing |
+| Pi status URL | URL of the status service, e.g. `http://pi-host.local:8765/status` |
+| Turn screen off after (minutes) | Car Thing screen sleep; `0` = never |
+| Switch to Stack Status on alerts | switch to Stack Status when it reports a service down |
+| Mascot | mascot running on screen |
 
 ## How it works
 
@@ -99,7 +101,7 @@ To update an already installed app: `npm run build` then `npm run deploy -- --fi
 - **Knob/buttons stop working**: an app iframe had keyboard focus. The apps here never take focus
   on tap; restart the DeskThing client if it happens with other apps.
 - **Icons do not change after an update**: DeskThing tells the Car Thing to cache icons for 24 h.
-- **"VM non raggiungibile"**: check the URL in the settings and that port 8765 is reachable.
+- **"Pi host unreachable"**: check the URL in the settings and that port 8765 is reachable.
 
 ## Notes
 
