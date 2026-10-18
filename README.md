@@ -99,7 +99,9 @@ To update an already installed app: `npm run build` then `npm run deploy -- --fi
 ## Troubleshooting
 
 - **Knob/buttons stop working**: an app iframe had keyboard focus. The apps here never take focus
-  on tap; restart the DeskThing client if it happens with other apps.
+  on tap; if it happens with other apps (e.g. Spotify) restart the DeskThing client, or install the
+  [patched DeskThing client](https://github.com/franzo-ux/DeskThing-Client) that fixes it for every app
+  (it also sizes the knob wheel to your apps, 4 to 8 slots).
 - **Icons do not change after an update**: DeskThing tells the Car Thing to cache icons for 24 h.
 - **"Pi host unreachable"**: check the URL in the settings and that port 8765 is reachable.
 

@@ -99,7 +99,9 @@ Per aggiornare un'app già installata: `npm run build`, poi `npm run deploy -- -
 ## Problemi comuni
 
 - **Rotella e tasti smettono di funzionare**: un'app aveva preso il focus della tastiera. Queste app
-  non lo prendono mai al tocco; se succede con altre app riavvia il client di DeskThing.
+  non lo prendono mai al tocco; se succede con altre app (es. Spotify) riavvia il client di DeskThing,
+  oppure installa il [client DeskThing modificato](https://github.com/franzo-ux/DeskThing-Client) che lo
+  risolve per tutte le app (e adatta la rotella al numero di app, da 4 a 8 posti).
 - **Le icone non cambiano dopo un aggiornamento**: DeskThing fa tenere in memoria le icone per 24 ore.
 - **"host di Pi non raggiungibile"**: controlla l'URL nelle impostazioni e che la porta 8765 sia raggiungibile.
 

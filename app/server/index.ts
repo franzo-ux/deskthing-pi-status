@@ -147,7 +147,7 @@ DeskThing.on(DESKTHING_EVENTS.START, async () => {
   if (screenTimer) clearInterval(screenTimer);
   screenTimer = setInterval(ensureScreenIdle, 60000);
   if (musicTimer) clearInterval(musicTimer);
-  musicTimer = setInterval(checkMusic, 5000);
+  musicTimer = setInterval(checkMusic, 15000); // the Spotify app polls too: stay well under the rate limit
   if (alertTimer) clearInterval(alertTimer);
   checkStackAlert();
   alertTimer = setInterval(checkStackAlert, 2000);

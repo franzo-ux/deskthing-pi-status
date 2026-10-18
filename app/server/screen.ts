@@ -12,6 +12,7 @@ const DESKTHING_DIR = join(__dirname, "..", "..", "..");
 
 const REMOTE_DIR = "/var/screen-idle";
 const REMOTE_SCRIPT = REMOTE_DIR + "/screen-idle.sh";
+const SCRIPT_VERSION = (/echo (\d+) > "\$RUN\/version"/.exec(SCRIPT) || [])[1] || "0";
 
 function findAdb(): string | null {
   const candidates = [
@@ -47,7 +48,7 @@ export async function ensureScreenIdle() {
     const seconds = Math.max(0, Math.round(timeoutMin * 60));
     const state = await adb([
       "shell",
-      "cat /tmp/screen-idle/timeout 2>/dev/null; [ -f /tmp/screen-idle/pid ] && kill -0 $(cat /tmp/screen-idle/pid) 2>/dev/null && echo RUNNING",
+      "cat /tmp/screen-idle/timeout 2>/dev/null; echo v$(cat /tmp/screen-idle/version 2>/dev/null); [ -f /tmp/screen-idle/pid ] && kill -0 $(cat /tmp/screen-idle/pid) 2>/dev/null && echo RUNNING",
     ]);
     const running = state.includes("RUNNING");
     const current = parseInt(state, 10);
@@ -55,14 +56,14 @@ export async function ensureScreenIdle() {
       if (running) await adb(["shell", "kill $(cat /tmp/screen-idle/pid)"]);
       return;
     }
-    if (running && current === seconds) return;
+    if (running && current === seconds && state.split(/\s+/).indexOf("v" + SCRIPT_VERSION) >= 0) return; // adb ends lines with \r\r\n
     const local = join(__dirname, "screen-idle.sh");
     writeFileSync(local, SCRIPT.replace(/\r\n/g, "\n"));
     await adb(["shell", "mkdir -p " + REMOTE_DIR]);
     await adb(["push", local, REMOTE_SCRIPT]);
     await adb([
       "shell",
-      "chmod +x " + REMOTE_SCRIPT + "; setsid sh " + REMOTE_SCRIPT + " " + seconds + " </dev/null >" + REMOTE_DIR + "/log 2>&1 &",
+      "chmod +x " + REMOTE_SCRIPT + "; setsid sh " + REMOTE_SCRIPT + " " + seconds + " </dev/null >" + REMOTE_DIR + "/log 2>&1 & sleep 1", // without the sleep adb ends the session before setsid detaches
     ]);
     console.log(`Screen idle started on the Car Thing (${timeoutMin} min)`);
   } catch (e) {
@@ -89,6 +90,8 @@ export function wakeScreen(reason: string) {
 const SPOTIFY_DATA = join(DESKTHING_DIR, "data", "spotify.json");
 let lastPlaying: boolean | null = null;
 let lastTrack: string | null = null;
+let musicPausedUntil = 0; // Spotify said "too many requests": wait
+
 
 /** Poll Spotify with the DeskThing Spotify app's own login (read-only). */
 export async function checkMusic() {
@@ -98,7 +101,7 @@ export async function checkMusic() {
   } catch {
     return;
   }
-  if (!token) return;
+  if (!token || Date.now() < musicPausedUntil) return;
   try {
     const res = await fetch("https://api.spotify.com/v1/me/player?additional_types=episode", {
       headers: { Authorization: "Bearer " + token },
@@ -107,6 +110,13 @@ export async function checkMusic() {
     // 204: nothing playing; 401: the Spotify app refreshes its token on its own
     if (res.status === 204) {
       lastPlaying = false;
+      return;
+    }
+    if (res.status === 429) {
+      // shared limit with the DeskThing Spotify app: back off generously
+      const wait = Math.max(60, Number(res.headers.get("retry-after")) || 0);
+      musicPausedUntil = Date.now() + wait * 1000;
+      console.warn("Spotify rate limit: music check paused for " + wait + " s");
       return;
     }
     if (!res.ok) return;
