@@ -62,15 +62,21 @@ export default function (pi: ExtensionAPI) {
 	let active = false;
 	const pendingQuestions = new Set<string>();
 	let lastReply = "";
+	let lastNames = "";
+	let nameTimer: ReturnType<typeof setInterval> | null = null;
+
+	const sessionName = (): string | undefined => {
+		try {
+			return pi.getSessionName() || undefined;
+		} catch {
+			return undefined;
+		}
+	};
 
 	const write = () => {
 		if (!active) return;
-		let name: string | undefined;
-		try {
-			name = pi.getSessionName();
-		} catch {
-			name = undefined;
-		}
+		const name = sessionName();
+		lastNames = (name ?? "") + "|" + (tmux ?? "");
 		const data = {
 			pid: process.pid,
 			label: tmux || name || basename(cwd),
@@ -106,6 +112,14 @@ export default function (pi: ExtensionAPI) {
 		state = "idle";
 		since = Date.now();
 		write();
+		// The tmux session or the Pi session can be renamed at any time:
+		// look again every 3 minutes and publish the new name.
+		if (nameTimer) clearInterval(nameTimer);
+		nameTimer = setInterval(() => {
+			tmux = tmuxSession();
+			if ((sessionName() ?? "") + "|" + (tmux ?? "") !== lastNames) write();
+		}, 3 * 60 * 1000);
+		nameTimer.unref?.();
 	});
 
 	pi.on("agent_start", async () => {
@@ -137,6 +151,8 @@ export default function (pi: ExtensionAPI) {
 
 	pi.on("session_shutdown", async () => {
 		active = false;
+		if (nameTimer) clearInterval(nameTimer);
+		nameTimer = null;
 		try {
 			rmSync(FILE, { force: true });
 		} catch {
