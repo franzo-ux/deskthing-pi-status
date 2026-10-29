@@ -53,6 +53,32 @@ function tmuxSession(): string | undefined {
 	}
 }
 
+// If your launcher names tmux sessions "<prefix>-<name>", set the prefix here:
+// renamed sessions keep it, so the launcher can still find them. Empty: the
+// tmux session simply takes the Pi session name.
+const TMUX_PREFIX = "";
+
+/**
+ * Give the tmux session the Pi session name (/name), with the characters
+ * tmux and the launcher accept. Returns the new tmux name, or undefined if
+ * Pi is not in tmux or tmux refused (e.g. another session has that name).
+ */
+function renameTmux(name: string): string | undefined {
+	const pane = process.env.TMUX_PANE;
+	if (!process.env.TMUX || !pane) return undefined;
+	const clean = name.trim().replace(/[^A-Za-z0-9_-]/g, "_");
+	if (!clean) return undefined;
+	try {
+		const current = execFileSync("tmux", ["display-message", "-p", "-t", pane, "#S"], { encoding: "utf8", timeout: 1000 }).trim();
+		const safe = TMUX_PREFIX && current.startsWith(TMUX_PREFIX) ? TMUX_PREFIX + "-" + clean : clean;
+		if (current === safe) return safe;
+		execFileSync("tmux", ["rename-session", "-t", current, safe], { timeout: 1000 });
+		return safe;
+	} catch {
+		return undefined;
+	}
+}
+
 export default function (pi: ExtensionAPI) {
 	let cwd = process.cwd();
 	let tmux: string | undefined;
@@ -109,6 +135,9 @@ export default function (pi: ExtensionAPI) {
 		active = true;
 		cwd = ctx.cwd;
 		tmux = tmuxSession();
+		// a resumed session that already has a name: give it to tmux too
+		const named = sessionName();
+		if (named) tmux = renameTmux(named) ?? tmux;
 		state = "idle";
 		since = Date.now();
 		write();
@@ -120,6 +149,12 @@ export default function (pi: ExtensionAPI) {
 			if ((sessionName() ?? "") + "|" + (tmux ?? "") !== lastNames) write();
 		}, 3 * 60 * 1000);
 		nameTimer.unref?.();
+	});
+
+	// /name in Pi: rename the tmux session and update the Car Thing at once
+	pi.on("session_info_changed", async (event) => {
+		if (event.name) tmux = renameTmux(event.name) ?? tmuxSession();
+		write();
 	});
 
 	pi.on("agent_start", async () => {

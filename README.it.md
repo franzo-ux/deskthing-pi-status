@@ -13,7 +13,8 @@ facendo le istanze del [coding agent Pi](https://pi.dev), con una piccola mascot
 *Screenshot alla risoluzione del Car Thing (800×480), con dati di esempio, in inglese (lingua predefinita).*
 
 - **Stato in tempo reale di ogni istanza di Pi**: al lavoro, libera, finita da N minuti. Ogni istanza
-  compare con il nome che le dai con `/name` (altrimenti la sessione tmux o la cartella).
+  compare con il nome che le dai con `/name` (altrimenti la sessione tmux o la cartella). In tmux,
+  `/name` rinomina anche la sessione tmux (vedi `TMUX_PREFIX` in `vm/deskthing-status.ts` per i lanciatori).
 - **"Pi ti sta chiedendo qualcosa"**: quando Pi si ferma per farti una domanda (lo strumento
   `ask_user` di [pi-ask](https://www.npmjs.com/package/@eko24ive/pi-ask), la skill *grilling*, o una
   risposta che si chiude con una domanda) lo schermo va in **glitch**.
