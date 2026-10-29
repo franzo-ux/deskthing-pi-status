@@ -12,7 +12,8 @@ A [DeskThing](https://deskthing.app) app for the Spotify **Car Thing** that show
 
 *Screenshots at the Car Thing resolution (800×480), with sample data.*
 
-- **Live status of every Pi instance**: busy, idle, finished N minutes ago.
+- **Live status of every Pi instance**: busy, idle, finished N minutes ago. Each instance is shown
+  with the name you give it with `/name` (otherwise its tmux session or its folder).
 - **"Pi is asking you something"**: when Pi stops to ask a question (the `ask_user` tool of
   [pi-ask](https://www.npmjs.com/package/@eko24ive/pi-ask), the *grilling* skill, or a reply that
   ends with a question) the screen turns into a **glitch** effect.

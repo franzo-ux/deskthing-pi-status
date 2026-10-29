@@ -79,7 +79,7 @@ export default function (pi: ExtensionAPI) {
 		lastNames = (name ?? "") + "|" + (tmux ?? "");
 		const data = {
 			pid: process.pid,
-			label: tmux || name || basename(cwd),
+			label: name || tmux || basename(cwd), // /name in Pi wins over the tmux session
 			session: name ?? null,
 			tmux: tmux ?? null,
 			cwd,
