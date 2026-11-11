@@ -26,7 +26,7 @@ done
 sleep 2
 echo $$ > "$PIDFILE"
 echo "$TIMEOUT" > "$RUN/timeout"
-echo 2 > "$RUN/version" # bump with every change: the app restarts older copies
+echo 3 > "$RUN/version" # bump with every change: the app restarts older copies
 
 # "last activity" is written by several processes (readers, the PC over adb):
 # write it atomically and never trust what we read back.
@@ -92,7 +92,25 @@ for dev in /dev/input/event*; do
 	READERS="$READERS $!"
 done
 
+# Safety net for memory: the Car Thing's Chrome slowly grows; when little
+# memory is left, restart it cleanly (while the screen is off, or at once if
+# almost nothing is left) instead of letting earlyoom kill it in a loop.
+MEM_LOW_KB=81920
+MEM_CRITICAL_KB=40960
+mem_check() {
+	avail=$(awk '/^MemAvailable:/ {print $2}' /proc/meminfo)
+	[ -n "$avail" ] || return
+	if [ "$avail" -lt "$MEM_CRITICAL_KB" ] || { [ "$off" = 1 ] && [ "$avail" -lt "$MEM_LOW_KB" ]; }; then
+		echo "$(date +%s) low memory (${avail} kB): restarting chromium" >> "$RUN/memlog"
+		supervisorctl restart chromium >/dev/null 2>&1
+		sleep 30
+	fi
+}
+
+ticks=0
 while true; do
+	ticks=$((ticks + 1))
+	[ $((ticks % 60)) -eq 0 ] && mem_check
 	now=$(date +%s)
 	last=$(read_last "$now")
 	idle=$((now - last))

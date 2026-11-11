@@ -39,6 +39,20 @@ const DeskThing = createDeskThing();
 document.addEventListener("mousedown", (e) => e.preventDefault(), true);
 
 const $ = (id: string) => document.getElementById(id) as HTMLElement;
+
+// Write to the page only when something changed: rebuilding the same text or
+// HTML every second leaves garbage DOM nodes that the Car Thing's Chrome
+// collects too late (its memory watchdog kills Chrome first).
+const lastHtml = new WeakMap<Element, string>();
+function setHtml(el: Element, html: string) {
+  if (lastHtml.get(el) === html) return;
+  lastHtml.set(el, html);
+  el.innerHTML = html;
+}
+function setText(el: Element, text: string) {
+  lastHtml.delete(el); // the element no longer holds the last HTML written
+  if (el.textContent !== text) el.textContent = text;
+}
 let status: PiStatus | null = null;
 let doneTimer: ReturnType<typeof setTimeout> | null = null;
 // PC time minus Car Thing time: the device clock is not synced
@@ -77,9 +91,9 @@ function render() {
   const list = $("list");
   if (!status) {
     app.className = "app wait";
-    $("big").textContent = "…";
-    $("lbl").textContent = tr("connecting");
-    list.innerHTML = "";
+    setText($("big"), "…");
+    setText($("lbl"), tr("connecting"));
+    setHtml(list, "");
     robot.setWalking(false);
     return;
   }
@@ -89,34 +103,34 @@ function render() {
 
   if (!status.online) {
     app.className = "app offline";
-    $("big").textContent = "!";
-    $("lbl").textContent = tr("unreachable");
+    setText($("big"), "!");
+    setText($("lbl"), tr("unreachable"));
   } else if (asking.length) {
     app.className = "app ask";
-    $("big").textContent = "?";
-    $("lbl").textContent = asking.length === 1 ? tr("asksOne") : tr("asksMany", { n: asking.length });
+    setText($("big"), "?");
+    setText($("lbl"), asking.length === 1 ? tr("asksOne") : tr("asksMany", { n: asking.length }));
   } else if (busy.length) {
     app.className = "app busy";
-    $("big").textContent = String(busy.length);
-    $("lbl").textContent = tr("working");
+    setText($("big"), String(busy.length));
+    setText($("lbl"), tr("working"));
   } else {
     app.className = "app idle";
-    $("big").textContent = String(status.sessions.length);
-    $("lbl").textContent = status.sessions.length === 1 ? tr("idleOne") : tr("idleMany");
+    setText($("big"), String(status.sessions.length));
+    setText($("lbl"), status.sessions.length === 1 ? tr("idleOne") : tr("idleMany"));
   }
   const isAsking = status.online && asking.length > 0;
   robot.setWalking(status.online && !isAsking && busy.length > 0);
   robot.setGlitch(isAsking);
 
   if (!status.online) {
-    list.innerHTML = '<div class="empty">' + esc(status.error || tr("noAnswer")) + "</div>";
+    setHtml(list, '<div class="empty">' + esc(status.error || tr("noAnswer")) + "</div>");
     return;
   }
   if (!status.sessions.length) {
-    list.innerHTML = '<div class="empty">' + tr("noInstances") + "</div>";
+    setHtml(list, '<div class="empty">' + tr("noInstances") + "</div>");
     return;
   }
-  list.innerHTML = status.sessions
+  setHtml(list, status.sessions
     .map((s) => {
       const isBusy = s.state === "busy";
       const isAsk = s.state === "asking";
@@ -135,7 +149,7 @@ function render() {
         '<span class="tm">' + right + "</span></div>"
       );
     })
-    .join("");
+    .join(""));
 }
 
 // ---------- running mascot ----------
@@ -279,8 +293,8 @@ const robot = (() => {
 // ---------- "done" overlay (style C) ----------
 
 function showDone(label: string, ms: number) {
-  $("done-label").textContent = label;
-  $("done-time").textContent = "exit 0 · " + clock(ms);
+  setText($("done-label"), label);
+  setText($("done-time"), "exit 0 · " + clock(ms));
   $("done").className = "done show";
   if (doneTimer) clearTimeout(doneTimer);
   doneTimer = setTimeout(() => ($("done").className = "done"), 15000);
@@ -289,8 +303,8 @@ function showDone(label: string, ms: number) {
 // texts written in index.html
 function applyStaticTexts() {
   document.documentElement.lang = lang;
-  ($("done").querySelector(".hint") as HTMLElement).textContent = tr("tapToClose");
-  ($("alert").querySelector(".alert-sub") as HTMLElement).textContent = tr("stackStatus");
+  setText(($("done").querySelector(".hint") as HTMLElement), tr("tapToClose"));
+  setText(($("alert").querySelector(".alert-sub") as HTMLElement), tr("stackStatus"));
 }
 applyStaticTexts();
 
@@ -330,7 +344,7 @@ DeskThing.on("mascot", (data: any) => {
 // Stack Status alert: glitchy banner, then jump to the Stack Status app.
 DeskThing.on("homelab_alert", (data: any) => {
   const p = data.payload || {};
-  $("alert-text").textContent = "⚠ " + (p.text || tr("stackAlert"));
+  setText($("alert-text"), "⚠ " + (p.text || tr("stackAlert")));
   $("alert").className = "alert show";
   setTimeout(() => ($("alert").className = "alert"), 6000);
   if (p.switch) {
