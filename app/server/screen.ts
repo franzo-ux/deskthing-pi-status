@@ -71,6 +71,37 @@ export async function ensureScreenIdle() {
   }
 }
 
+// ---- the USB tunnel the Car Thing uses to reach DeskThing ----
+//
+// DeskThing opens "adb reverse tcp:<port> tcp:<port>" when it first sees the
+// Car Thing. If adb has a hiccup the tunnel is gone ("Waiting for
+// connection..." on the Car Thing) and DeskThing 0.11 never opens it again
+// for a device it already knows. Check it every minute and reopen it.
+
+function devicePort(): number {
+  try {
+    const s = JSON.parse(readFileSync(join(DESKTHING_DIR, "settings.json"), "utf8"));
+    const port = Number(s?.device_devicePort);
+    if (Number.isInteger(port) && port > 0) return port;
+  } catch {
+    // default below
+  }
+  return 8891;
+}
+
+export async function ensureTunnel() {
+  if (!(await connected())) return;
+  const port = devicePort();
+  try {
+    const list = await adb(["reverse", "--list"]);
+    if (list.includes("tcp:" + port)) return;
+    await adb(["reverse", "tcp:" + port, "tcp:" + port]);
+    console.log("Reopened the USB tunnel to DeskThing (port " + port + ")");
+  } catch (e) {
+    console.warn("USB tunnel: " + (e instanceof Error ? e.message : e));
+  }
+}
+
 export function setScreenTimeout(minutes: number) {
   if (!Number.isFinite(minutes) || minutes < 0 || minutes === timeoutMin) return;
   timeoutMin = minutes;

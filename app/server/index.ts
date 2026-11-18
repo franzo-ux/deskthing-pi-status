@@ -3,7 +3,7 @@ import { DESKTHING_EVENTS, SETTING_TYPES } from "@deskthing/types";
 import { isLang, LANGUAGE_OPTIONS, t, type Lang } from "../i18n";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { checkMusic, ensureScreenIdle, setScreenTimeout, wakeScreen } from "./screen";
+import { checkMusic, ensureScreenIdle, ensureTunnel, setScreenTimeout, wakeScreen } from "./screen";
 
 type PiSession = {
   pid: number;
@@ -145,7 +145,10 @@ DeskThing.on(DESKTHING_EVENTS.START, async () => {
   ensureScreenIdle();
   // re-check every minute: the Car Thing may have rebooted or reconnected
   if (screenTimer) clearInterval(screenTimer);
-  screenTimer = setInterval(ensureScreenIdle, 60000);
+  // every minute: the USB tunnel to DeskThing, then the screen-sleep script
+  screenTimer = setInterval(() => {
+    ensureTunnel().then(ensureScreenIdle);
+  }, 60000);
   if (musicTimer) clearInterval(musicTimer);
   musicTimer = setInterval(checkMusic, 15000); // the Spotify app polls too: stay well under the rate limit
   if (alertTimer) clearInterval(alertTimer);
