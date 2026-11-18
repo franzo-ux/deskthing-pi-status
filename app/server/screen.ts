@@ -92,11 +92,16 @@ function devicePort(): number {
 export async function ensureTunnel() {
   if (!(await connected())) return;
   const port = devicePort();
+  // Some Car Things answer "reverse --list" with "protocol fault": then just
+  // (re)create the tunnel, which replaces an existing one with the same port.
+  let list: string | null = null;
   try {
-    const list = await adb(["reverse", "--list"]);
-    if (list.includes("tcp:" + port)) return;
+    list = await adb(["reverse", "--list"]);
+  } catch {}
+  if (list !== null && list.includes("tcp:" + port)) return;
+  try {
     await adb(["reverse", "tcp:" + port, "tcp:" + port]);
-    console.log("Reopened the USB tunnel to DeskThing (port " + port + ")");
+    if (list !== null) console.log("Reopened the USB tunnel to DeskThing (port " + port + ")");
   } catch (e) {
     console.warn("USB tunnel: " + (e instanceof Error ? e.message : e));
   }
